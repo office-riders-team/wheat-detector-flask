@@ -3,6 +3,8 @@
 body {
   margin: 0;
   padding: 0;
+  text-align: center;
+  --popup-transition-delay: 0.3s;
 }
 
 * {
@@ -60,7 +62,6 @@ section {
   width: 170px;
   text-align: center;
   cursor: pointer;
-  transition: ;
 }
 
 .drop-zone.hover, .drop-zone:hover {
@@ -126,4 +127,57 @@ section {
   font-weight: 200;
   font-size: 30px;
   margin-left: 40px;
+}
+
+canvas {
+  border: 1px dashed black;
+  margin: 0 auto;
+  width: 1000px;
+  height: 1000px;
+  user-select: none;
+}
+
+#canvas-div {
+  display: flex;
+  flex-direction: row;
+  overflow: show;
+}
+
+.popup-background {
+  width: 100%;
+  height: 100%;
+  background: rgba(185, 185, 185, 0.5);
+  position: fixed;
+  top: 0px;
+
+  /* display: flex; */
+  justify-content: center;
+  align-items: center;
+  display: none;
+  opacity: 0;
+  transition: opacity var(--popup-transition-delay);
+}
+
+.popup-content {
+  width: 90%;
+  height: 90%;
+  background: white;
+  border-radius: 15px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.popup-close-btn {
+  position: absolute;
+  top: 40px;
+  right: 66px;
+}
+
+.popup-picture {
+  margin: 20px;
+  width: 50%;
+  max-height: 100%;
 }

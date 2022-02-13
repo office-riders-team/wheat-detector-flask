@@ -1,9 +1,48 @@
+"use strict"
 const dropZones = $('.drop-zone')
-const btn = $('.btn')
-const MAX_FILE_SIZE = 1000000; // максимальный размер файла - 1 мб.
+const imgsDZ = dropZones[0]
+const mapDZ = dropZones[1]
+const fileForms = $('input[type="file"]')
+const canvas = $('canvas')[0]
+const ctx = canvas.getContext('2d')
 
+const VERTICAL_ANGLE_OF_VIEW = 70
+const HORIZONTAL_ANGLE_OF_VIEW = 120
+const POPUP_ANIMATION_DURATION = 0.3
+
+let processedImgs = []
+let imgCoords = []
+let mapContour = []
+
+// Relatively to canvas!
+let mouseX = 0
+let mouseY = 0
+
+
+function getTanDeg(deg) {
+  var rad = deg * Math.PI/180;
+  return Math.tan(rad);
+}
+
+
+function getNumbersFromText(str) {
+  let nums = []
+  let num = ''
+  for (let i = 0; i < str.length; ++i) {
+    if (!isNaN(str[i])) {
+      num += str[i]
+    } else if ($.trim(num)) {
+      nums.push(parseInt(num))
+      num = ''
+    }
+  }
+  return nums
+}
+
+
+// ------------------------- Drop zones ---------------------
 for (let i = 0; i < dropZones.length; ++i) {
-  let dropZone = $(dropZones[i])
+  const dropZone = $(dropZones[i])
 
   if (typeof(window.FileReader) == 'undefined') {
       dropZone.text('Не поддерживается браузером!');
@@ -23,29 +62,205 @@ for (let i = 0; i < dropZones.length; ++i) {
 
   dropZone.on('drop', (event) => {
       event.preventDefault()
+
       dropZone.removeClass('hover')
       dropZone.addClass('drop')
 
       event.originalEvent.dataTransfer.dropEffect = 'move'
       const files = event.originalEvent.dataTransfer.files
+      fileForms[i].files = files
 
-      $('input[type="file"]')[i].files = files
+      const id = dropZone.attr('id')
+      if (id == 'map-dz') {
+        const file = files[0]
+        let reader = new FileReader()
+
+        reader.onload = (e) => {
+          const file = e.target.result
+          const nums = getNumbersFromText(file)
+          console.log('Coords:', nums)
+          mapContour = nums
+        }
+        reader.readAsText(file)
+      } else {
+        imgCoords = new Array(files.length)
+        for (let i = 0; i < files.length; ++i) imgCoords[i] = getNumbersFromText(files[i].name)
+        displayImages()
+      }
   })
 
   dropZone.on('click', (event) => {
-    const el = $($('input[type="file"]')[i])
+    const el = $(fileForms[i])
     el.trigger('click')
     el.on('change', () => {
       dropZone.addClass('drop')
+      const files = fileForms[i].files
+
+      const id = dropZone.attr('id')
+      if (id == 'map-dz') {
+        const file = files[0]
+        let reader = new FileReader()
+
+        reader.onload = (e) => {
+          const file = e.target.result
+          const nums = getNumbersFromText(file)
+          console.log('Coords:', nums)
+          mapContour = nums
+          displayMapContour()
+        }
+        reader.readAsText(file)
+      } else {
+        imgCoords = new Array(files.length)
+        for (let i = 0; i < files.length; ++i) imgCoords[i] = getNumbersFromText(files[i].name)
+        displayImages()
+      }
     })
-
   })
+}
 
+// Process button
+$('.btn').on('click', (e) => {
+  e.preventDefault() // XXX: STOPS FROM DEFAULT BEHAVIOUR
+  // $('html,body').animate({scrollTop: $('#ans-text').offset().top}, 'slow')
+
+  // const xhttp = new XMLHttpRequest()
+  //
+  // xhttp.onreadystatechange = () => {
+  //   if (xhttp.readyState === XMLHttpRequest.DONE) {
+  //     const res = xhttp.responseText
+  //     console.log(res)
+  //   }
+  // }
+  // xhttp.open('POST', 'http://127.0.0.1:5000/process/', true)
+  // xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  // xhttp.send(formData)
+  // console.log(formData)
+
+  // const formData = new FormData(fileForms[0][0])
+  // formData.append('imgs', imgs)
+
+  const formData = new FormData()
+
+  const imgs = fileForms[0].files
+  for (let i = 0; i < imgs.length; ++i) {
+    formData.append(`${i}`, imgs[i])
+  }
+
+  fetch('http://127.0.0.1:5000/process/', {
+    method: "POST",
+    body: formData
+  }).
+  then(
+    (response) => {
+      response.text().then(
+        (responseText) => {
+          // CODE HERE...
+          console.log(responseText)
+        }
+      )
+    }
+  )
+
+})
+
+
+//---------------------------- Canvas stuff --------------------------------
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  displayImages()
+  displayMapContour()
 }
 
 
-btn.on('click', (e) => {
-  e.preventDefault() // XXX: STOPS FROM DEFAULT BEHAVIOUR
-  $('html,body').animate({scrollTop: $('#ans-text').offset().top}, 'slow')
+function displayImages() {
+  imgCoords.forEach((numbers, i) => {
+    const xCenter = numbers[2]
+    const yCenter = numbers[3]
+    // const h = numbers[4] / 100
+    ctx.fillStyle = 'red'
+    ctx.beginPath()
+    ctx.arc(xCenter, yCenter, 4, 0, 2 * Math.PI)
+    ctx.fill()
+  })
+}
 
+
+function displayMapContour() {
+  const nums = mapContour
+  ctx.strokeStyle = 'black'
+  ctx.beginPath()
+  ctx.moveTo(nums[0], nums[1])
+
+  for (let i = 2; i < nums.length; i += 2) {
+    ctx.lineTo(nums[i], nums[i + 1])
+  }
+  ctx.lineTo(nums[0], nums[1])
+  ctx.stroke()
+}
+
+
+function isMouseHoveredOverPoint(points) {
+  return imgCoords.some((numbers) => {
+    const xCenter = numbers[2]
+    const yCenter = numbers[3]
+
+    const radius = 10
+
+    return xCenter - radius <= mouseX && mouseX <= xCenter + radius && yCenter - radius <= mouseY && mouseY <= yCenter + radius
+  })
+}
+
+
+const canvasOffset = $('canvas').offset()
+$('canvas').on('mousemove', (e) => {
+  draw()
+  mouseX = Math.floor(e.pageX - canvasOffset.left)
+  mouseY = Math.floor(e.pageY - canvasOffset.top)
+
+  // Draw a rectangle near the cursor
+  ctx.fillStyle = '#808080'
+  ctx.fillRect(mouseX + 20, mouseY, 50, 20)
+  ctx.fillStyle = 'white'
+  ctx.fillText(`${mouseX}, ${mouseY}`, mouseX + 25, mouseY + 15)
+
+  // If cursor is hovered over any point we should change the cursor style
+  if (isMouseHoveredOverPoint()) {
+    $('canvas').css('cursor', 'pointer')
+  } else {
+    $('canvas').css('cursor', 'auto')
+  }
+})
+
+// If user clicked on a point
+$('canvas').on('click', (e) => {
+  if (!isMouseHoveredOverPoint()) return
+
+  imgCoords.forEach((numbers, i) => {
+    const xCenter = numbers[2]
+    const yCenter = numbers[3]
+
+    const radius = 10
+
+    if (xCenter - radius <= mouseX && mouseX <= xCenter + radius && yCenter - radius <= mouseY && mouseY <= yCenter + radius) {
+      $('.popup-background').css('display', 'flex')
+      setTimeout(() => $('.popup-background').css('opacity', '1'), POPUP_ANIMATION_DURATION * 1000)
+
+      const reader = new FileReader()
+      reader.readAsDataURL(imgs[i])
+
+      reader.onload = function () {
+        const base64Image = reader.result
+        $('.popup-picture').attr('src', base64Image)
+      }
+    }
+  });
+})
+
+$('canvas').on('mouseleave', (e) => draw())
+
+
+// ------------------------- POPUP --------------------------
+$('.popup-close-btn').on('click', () => {
+  $('.popup-background').css('opacity', '0')
+  setTimeout(() => $('.popup-background').css('display', 'none'), POPUP_ANIMATION_DURATION * 1000)
 })

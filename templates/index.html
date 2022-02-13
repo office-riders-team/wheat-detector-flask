@@ -1,55 +1,60 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-</head>
+  </head>
 
-<body>
-<header>
-    <h1>SOME COOL PROGRAM</h1>
-    <div id="languages-btns">
+  <body>
+    <header>
+      <h1>Some cool program</h1>
+      <div id="languages-btns">
         <img class="icon" src="{{ url_for('static', filename= './imgs/Russia.png') }}">
         <img class="icon" src="{{ url_for('static', filename= './imgs/United-Kingdom.png') }}">
-    </div>
-</header>
+      </div>
+    </header>
 
-<h2>Load data</h2>
-<section id="load-data-container">
-    <div class="drop-zone">
+    <h2>Load data</h2>
+    <section id="load-data-container">
+      <div class="drop-zone" id="imgs-dz">
         <h2>Images</h2>
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M15.4142 1H5C3.89543 1 3 1.89543 3 3V21C3 22.1046 3.89543 23 5 23H19C20.1046 23 21 22.1046 21 21V6.58579L15.4142 1ZM5 3H13V7C13 8.10457 13.8954 9 15 9H19V21H5V3ZM15 7V3.41421L18.5858 7H15ZM13 18V13.4142L14.2929 14.7071L15.7071 13.2929L12 9.58579L8.29289 13.2929L9.70711 14.7071L11 13.4142V18H13Z" fill="black"/>
-        </svg>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M15.4142 1H5C3.89543 1 3 1.89543 3 3V21C3 22.1046 3.89543 23 5 23H19C20.1046 23 21 22.1046 21 21V6.58579L15.4142 1ZM5 3H13V7C13 8.10457 13.8954 9 15 9H19V21H5V3ZM15 7V3.41421L18.5858 7H15ZM13 18V13.4142L14.2929 14.7071L15.7071 13.2929L12 9.58579L8.29289 13.2929L9.70711 14.7071L11 13.4142V18H13Z" fill="black"/>
+</svg>
         <h2>none</h2>
-    </div>
+      </div>
 
-    <div class="drop-zone">
+      <div class="drop-zone" id="map-dz">
         <h2>Map contour</h2>
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M15.4142 1H5C3.89543 1 3 1.89543 3 3V21C3 22.1046 3.89543 23 5 23H19C20.1046 23 21 22.1046 21 21V6.58579L15.4142 1ZM5 3H13V7C13 8.10457 13.8954 9 15 9H19V21H5V3ZM15 7V3.41421L18.5858 7H15ZM13 18V13.4142L14.2929 14.7071L15.7071 13.2929L12 9.58579L8.29289 13.2929L9.70711 14.7071L11 13.4142V18H13Z" fill="black"/>
-        </svg>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M15.4142 1H5C3.89543 1 3 1.89543 3 3V21C3 22.1046 3.89543 23 5 23H19C20.1046 23 21 22.1046 21 21V6.58579L15.4142 1ZM5 3H13V7C13 8.10457 13.8954 9 15 9H19V21H5V3ZM15 7V3.41421L18.5858 7H15ZM13 18V13.4142L14.2929 14.7071L15.7071 13.2929L12 9.58579L8.29289 13.2929L9.70711 14.7071L11 13.4142V18H13Z" fill="black"/>
+</svg>
         <h2>none</h2>
+      </div>
+    </section>
+    <form enctype="multipart/form-data" method="post" action="">
+    <input type="file" class="dndzone-input" name="imgs" multiple>
+    <input type="file" class="dndzone-input" name="map">
+    <button class="btn">Process</button>
+    </form>
+
+    <h2>The map</h2>
+
+    <div id="canvas-div">
+      <canvas width="1000px" height="1000px"></canvas>
     </div>
-</section>
 
-<form enctype="multipart/form-data" method="post" action="">
-<input type="file" class="dndzone-input" name="img"/>
-<input type="file" class="dndzone-input" name="map"/>
-<button class="btn">Process</button>
-</form>
+    <div class="popup-background">
+      <div class="popup-content">
+        <button class="popup-close-btn">x</button>
+        <img class="popup-picture" src="">
+      </div>
+    </div>
 
+    <h3 id="ans-text">The answer is: #ANSWER</h3>
 
-<h2>The map</h2>
-<section>
-    <p id="beta-para"></p>
-</section>
-
-<h3 id="ans-text">The answer is: #ANSWER</h3>
-
-
-</body>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<script src="{{ url_for('static', filename= './js/main.js') }}"></script>
+  </body>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename= './js/main.js') }}"></script>
 </html>
