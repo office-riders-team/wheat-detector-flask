@@ -85,7 +85,7 @@ for (let i = 0; i < dropZones.length; ++i) {
       } else {
         imgCoords = new Array(files.length)
         for (let i = 0; i < files.length; ++i) imgCoords[i] = getNumbersFromText(files[i].name)
-        displayImages()
+        displayImageDots()
       }
   })
 
@@ -112,7 +112,7 @@ for (let i = 0; i < dropZones.length; ++i) {
       } else {
         imgCoords = new Array(files.length)
         for (let i = 0; i < files.length; ++i) imgCoords[i] = getNumbersFromText(files[i].name)
-        displayImages()
+        displayImageDots()
       }
     })
   })
@@ -121,23 +121,7 @@ for (let i = 0; i < dropZones.length; ++i) {
 // Process button
 $('.btn').on('click', (e) => {
   e.preventDefault() // XXX: STOPS FROM DEFAULT BEHAVIOUR
-  // $('html,body').animate({scrollTop: $('#ans-text').offset().top}, 'slow')
-
-  // const xhttp = new XMLHttpRequest()
-  //
-  // xhttp.onreadystatechange = () => {
-  //   if (xhttp.readyState === XMLHttpRequest.DONE) {
-  //     const res = xhttp.responseText
-  //     console.log(res)
-  //   }
-  // }
-  // xhttp.open('POST', 'http://127.0.0.1:5000/process/', true)
-  // xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  // xhttp.send(formData)
-  // console.log(formData)
-
-  // const formData = new FormData(fileForms[0][0])
-  // formData.append('imgs', imgs)
+  $('html,body').animate({scrollTop: $('canvas').offset().top - 40}, 'slow')
 
   const formData = new FormData()
 
@@ -154,8 +138,12 @@ $('.btn').on('click', (e) => {
     (response) => {
       response.text().then(
         (responseText) => {
-          // CODE HERE...
-          console.log(responseText)
+          if (responseText != 'OK') {
+            console.log('ERROR OCCURED! RESPONSE NOT OK')
+          } else {
+            console.log('OK')
+            draw()
+          }
         }
       )
     }
@@ -167,12 +155,12 @@ $('.btn').on('click', (e) => {
 //---------------------------- Canvas stuff --------------------------------
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  displayImages()
+  displayImageDots()
   displayMapContour()
 }
 
 
-function displayImages() {
+function displayImageDots() {
   imgCoords.forEach((numbers, i) => {
     const xCenter = numbers[2]
     const yCenter = numbers[3]
@@ -245,13 +233,14 @@ $('canvas').on('click', (e) => {
       $('.popup-background').css('display', 'flex')
       setTimeout(() => $('.popup-background').css('opacity', '1'), POPUP_ANIMATION_DURATION * 1000)
 
-      const reader = new FileReader()
-      reader.readAsDataURL(imgs[i])
+      // const reader = new FileReader()
+      // reader.readAsDataURL(imgs[i])
 
-      reader.onload = function () {
-        const base64Image = reader.result
-        $('.popup-picture').attr('src', base64Image)
-      }
+      // reader.onload = function () {
+        // const base64Image = reader.result
+        // $('.popup-picture').attr('src', base64Image)
+      // }
+      $('.popup-picture').attr('src', `./static/results/${i}.jpg`)
     }
   });
 })

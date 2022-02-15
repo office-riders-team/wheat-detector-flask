@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, flash, redirect
 from werkzeug.utils import secure_filename
-
-from os import system
+from wd_ml.model import make_predictions
 
 app = Flask(__name__)
 
@@ -14,13 +13,20 @@ def hello():
 @app.route('/process/', methods=['POST'])
 def process():
     if not request.files:
-        print('D: EMPTY FILE LIST IN POST REQUEST')
+        print('D: GOT EMPTY FILE LIST DURING POST REQUEST')
         return redirect(request.url)
 
-    print(request.files)
+    # All files are stored in the dict as (PHOTO_NUMBER, FILE)
+    # PHOTO_NUMBER -- int from 0 to n - 1
     files = request.files
-    for i in files:
-        files[i].save(files[i].name + '.png')
+    for i in range(len(request.files)):
+        needed_file = request.files.get(str(i))
+        needed_file.save('./static/unprocessed_images/' + needed_file.name + '.png')
+
+    print('MAKING PREDICTIONS...')
+    make_predictions('png', './static/unprocessed_images/', './static/results/')
+    print('END PREDICT')
+
     return 'OK'
 
 

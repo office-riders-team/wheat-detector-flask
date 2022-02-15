@@ -1,0 +1,3 @@
+[submodule "wd-ml"]
+	path = wd-ml
+	url = https://github.com/janavour/Wheat-Detector-ML
