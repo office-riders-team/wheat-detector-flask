@@ -18,6 +18,10 @@ let mapContour = []
 let mouseX = 0
 let mouseY = 0
 
+let totalWheat
+let density
+let totalArea
+
 
 function getTanDeg(deg) {
   var rad = deg * Math.PI/180;
@@ -124,7 +128,6 @@ for (let i = 0; i < dropZones.length; ++i) {
 // Process button
 $('.btn').on('click', (e) => {
   e.preventDefault() // XXX: STOPS FROM DEFAULT BEHAVIOUR
-  $('html,body').animate({scrollTop: $('canvas').offset().top - 40}, 'slow')
 
   const formData = new FormData()
   formData.append('fieldCoords', mapContour)
@@ -144,10 +147,19 @@ $('.btn').on('click', (e) => {
     (response) => {
       response.text().then(
         (responseText) => {
-          if (responseText != 'OK') {
+          if (responseText == 'FAIL') {
             console.log('ERROR OCCURED! RESPONSE NOT OK')
+            drawTextOnCanvas('NOTHING PROCESSED YET', 80)
+
           } else {
-            console.log('OK')
+            // Scroll down to the canvas
+            $('html,body').animate({scrollTop: $('canvas').offset().top - 40}, 'slow')
+
+            const data = responseText.split(';')
+            totalArea = data[0]
+            totalWheat = data[1]
+            density = data[2]
+            
             wereImagesProcessed = true
             draw()
           }
@@ -178,6 +190,18 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   displayImageDots()
   displayMapContour()
+  drawFieldStats()
+}
+
+
+function drawFieldStats() { 
+  ctx.textAlign = 'right'
+  ctx.fillStyle = 'black'
+  ctx.font =  '20px Roboto'
+  const text = [`Field area: ${totalArea}`, `Total Wheat: ${totalWheat}`, `Density: ${density}`]
+  for (let i = 0; i < text.length; ++i) {
+    ctx.fillText(text[i], 1000, 20 + i * 20)
+  }
 }
 
 
@@ -229,6 +253,7 @@ $('canvas').on('mousemove', (e) => {
 
   // Draw a rectangle near the cursor
   ctx.fillStyle = '#808080'
+  ctx.textAlign = 'center'
   const xOffset = 8
   const yOffest = 3
   ctx.fillRect(mouseX + xOffset - 3, mouseY + yOffest, 50, 20)
