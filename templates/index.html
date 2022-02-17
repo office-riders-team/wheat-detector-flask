@@ -8,10 +8,13 @@
 
   <body>
     <header>
-      <h1>
-        <span style="color: yellow;">Wheat</span>
-        <span style="color: white;">detector</span>
-      </h1>
+      <div id="logotype">
+        <img id="logo" src="{{ url_for('static', filename= 'imgs/logo.png') }}">
+        <h1>
+          <span style="color: yellow;">Wheat</span>
+          <span style="color: white;">detector</span>
+        </h1>
+      </div>
       <div id="languages-btns">
         <img class="icon" src="{{ url_for('static', filename= './imgs/Russia.png') }}">
         <img class="icon" src="{{ url_for('static', filename= './imgs/United-Kingdom.png') }}">
