@@ -4,6 +4,7 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
+  background: url('../imgs/background.jpg');
   --popup-transition-delay: 0.3s;
 }
 
@@ -18,13 +19,17 @@ h1 {
   margin-top: 20px;
   text-align: center;
   margin-bottom: 50px;
+  background-color: #006e5a;
+  color: white;
+  margin-top: 0;
+  padding: 10px;
 }
 
 #languages-btns {
   text-align: right;
   position: absolute;
-  right: 10px;
-  top: 10px;
+  right: 13px;
+  top: 18px;
 }
 
 .icon {
@@ -56,6 +61,11 @@ section {
   align-items: center;
   height: auto;
   padding: 17px;
+  background: #FEFCE5;
+  border-color: #035D54;
+  border-radius: 0px;
+  border-width: 7px;
+  border-style: solid;
 }
 
 .drop-zone {
@@ -132,9 +142,15 @@ section {
 canvas {
   border: 1px dashed black;
   margin: 0 auto;
-  width: 1000px;
-  height: 1000px;
+  /* width: 80%; */
+  /* height: 1000px; */
   user-select: none;
+
+  background: #FEFCE5;
+  border-color: #035D54;
+  border-radius: 0px;
+  border-width: 7px;
+  border-style: solid;
 }
 
 #canvas-div {

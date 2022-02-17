@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, flash, redirect
-from werkzeug.utils import secure_filename
-from wd_ml.model import make_predictions
+from ML.model import make_predictions
 
 app = Flask(__name__)
 

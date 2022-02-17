@@ -207,9 +207,11 @@ $('canvas').on('mousemove', (e) => {
 
   // Draw a rectangle near the cursor
   ctx.fillStyle = '#808080'
-  ctx.fillRect(mouseX + 20, mouseY, 50, 20)
+  const xOffset = 10
+  const yOffest = 3
+  ctx.fillRect(mouseX + xOffset, mouseY + yOffest, 50, 20)
   ctx.fillStyle = 'white'
-  ctx.fillText(`${mouseX}, ${mouseY}`, mouseX + 25, mouseY + 15)
+  ctx.fillText(`${mouseX}, ${mouseY}`, mouseX + xOffset + 4, mouseY + yOffest + 14)
 
   // If cursor is hovered over any point we should change the cursor style
   if (isMouseHoveredOverPoint()) {
