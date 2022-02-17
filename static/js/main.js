@@ -85,7 +85,6 @@ for (let i = 0; i < dropZones.length; ++i) {
       } else {
         imgCoords = new Array(files.length)
         for (let i = 0; i < files.length; ++i) imgCoords[i] = getNumbersFromText(files[i].name)
-        displayImageDots()
       }
   })
 
@@ -106,13 +105,11 @@ for (let i = 0; i < dropZones.length; ++i) {
           const nums = getNumbersFromText(file)
           console.log('Coords:', nums)
           mapContour = nums
-          displayMapContour()
         }
         reader.readAsText(file)
       } else {
         imgCoords = new Array(files.length)
         for (let i = 0; i < files.length; ++i) imgCoords[i] = getNumbersFromText(files[i].name)
-        displayImageDots()
       }
     })
   })
