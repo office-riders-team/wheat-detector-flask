@@ -10,7 +10,7 @@ const VERTICAL_ANGLE_OF_VIEW = 70
 const HORIZONTAL_ANGLE_OF_VIEW = 120
 const POPUP_ANIMATION_DURATION = 0.3
 
-let processedImgs = []
+let wereImagesProcessed = false
 let imgCoords = []
 let mapContour = []
 
@@ -130,6 +130,8 @@ $('.btn').on('click', (e) => {
     formData.append(`${i}`, imgs[i])
   }
 
+  drawTextOnCanvas('PROCESSING...', 80)
+
   fetch('http://127.0.0.1:5000/process/', {
     method: "POST",
     body: formData
@@ -142,6 +144,7 @@ $('.btn').on('click', (e) => {
             console.log('ERROR OCCURED! RESPONSE NOT OK')
           } else {
             console.log('OK')
+            wereImagesProcessed = true
             draw()
           }
         }
@@ -153,6 +156,20 @@ $('.btn').on('click', (e) => {
 
 
 //---------------------------- Canvas stuff --------------------------------
+drawTextOnCanvas('NOTHING PROCESSED YET', 80)
+
+
+function drawTextOnCanvas(text, fontSize) {
+  ctx.fillStyle = 'black'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  
+  ctx.textAlign = 'center'
+  ctx.fillStyle = 'white'
+  ctx.font = ('' + fontSize) + 'px Roboto'
+  ctx.fillText(text, 500, 500)
+}
+
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   displayImageDots()
@@ -201,17 +218,20 @@ function isMouseHoveredOverPoint(points) {
 
 const canvasOffset = $('canvas').offset()
 $('canvas').on('mousemove', (e) => {
+  if (!wereImagesProcessed) return
+
   draw()
   mouseX = Math.floor(e.pageX - canvasOffset.left)
   mouseY = Math.floor(e.pageY - canvasOffset.top)
 
   // Draw a rectangle near the cursor
   ctx.fillStyle = '#808080'
-  const xOffset = 10
+  const xOffset = 8
   const yOffest = 3
-  ctx.fillRect(mouseX + xOffset, mouseY + yOffest, 50, 20)
+  ctx.fillRect(mouseX + xOffset - 3, mouseY + yOffest, 50, 20)
   ctx.fillStyle = 'white'
-  ctx.fillText(`${mouseX}, ${mouseY}`, mouseX + xOffset + 4, mouseY + yOffest + 14)
+  ctx.font = '10px Roboto'
+  ctx.fillText(`${mouseX}, ${mouseY}`, mouseX + xOffset + 20, mouseY + yOffest + 14)
 
   // If cursor is hovered over any point we should change the cursor style
   if (isMouseHoveredOverPoint()) {
@@ -220,6 +240,7 @@ $('canvas').on('mousemove', (e) => {
     $('canvas').css('cursor', 'auto')
   }
 })
+
 
 // If user clicked on a point
 $('canvas').on('click', (e) => {
@@ -247,7 +268,9 @@ $('canvas').on('click', (e) => {
   });
 })
 
-$('canvas').on('mouseleave', (e) => draw())
+$('canvas').on('mouseleave', (e) => {
+  if (wereImagesProcessed) draw()
+})
 
 
 // ------------------------- POPUP --------------------------

@@ -3,6 +3,7 @@ Werkzeug~=2.0.3
 
 pandas
 torch
+torchvision
 numpy
 albumentations
 opencv-python
