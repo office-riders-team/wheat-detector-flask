@@ -78,8 +78,11 @@ for (let i = 0; i < dropZones.length; ++i) {
         reader.onload = (e) => {
           const file = e.target.result
           const nums = getNumbersFromText(file)
-          console.log('Coords:', nums)
-          mapContour = nums
+          
+          for (let i = 0; i < nums.length; i += 2) {
+            mapContour.push([nums[i], nums[i + 1]])
+          }
+          console.log('Coords:', mapContour)
         }
         reader.readAsText(file)
       } else {
@@ -104,7 +107,10 @@ for (let i = 0; i < dropZones.length; ++i) {
           const file = e.target.result
           const nums = getNumbersFromText(file)
           console.log('Coords:', nums)
-          mapContour = nums
+
+          for (let i = 0; i < nums.length; i += 2) {
+            mapContour.push([nums[i], nums[i + 1]])
+          }
         }
         reader.readAsText(file)
       } else {
@@ -121,6 +127,7 @@ $('.btn').on('click', (e) => {
   $('html,body').animate({scrollTop: $('canvas').offset().top - 40}, 'slow')
 
   const formData = new FormData()
+  formData.append('fieldCoords', mapContour)
 
   const imgs = fileForms[0].files
   for (let i = 0; i < imgs.length; ++i) {
@@ -191,12 +198,11 @@ function displayMapContour() {
   const nums = mapContour
   ctx.strokeStyle = 'black'
   ctx.beginPath()
-  ctx.moveTo(nums[0], nums[1])
-
-  for (let i = 2; i < nums.length; i += 2) {
-    ctx.lineTo(nums[i], nums[i + 1])
+  ctx.moveTo(nums[0][0], nums[0][1])
+  for (let i = 1; i < nums.length; ++i) {
+    ctx.lineTo(nums[i][0], nums[i][1])
   }
-  ctx.lineTo(nums[0], nums[1])
+  ctx.lineTo(nums[0][0], nums[0][1])
   ctx.stroke()
 }
 
