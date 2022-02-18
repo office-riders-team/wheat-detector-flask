@@ -1,8 +1,6 @@
-Flask~=2.0.2
-Werkzeug~=2.0.3
-
+flask
 pandas
-torch
+http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
 torchvision
 numpy
 albumentations
