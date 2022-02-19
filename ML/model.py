@@ -16,9 +16,8 @@ def make_test_df(dir_from):
     for filename in os.listdir(dir_from):
         f = os.path.join(dir_from, filename)
         if os.path.isfile(f):
-            d['image_id'].append(filename[:-4])
+            d['image_id'].append(filename)
             d['PredictionString'].append('1.0 0 0 50 50')
-
     return pd.DataFrame(data=d)
 
 
@@ -38,12 +37,12 @@ def make_model():
     return model
 
 
-def make_predictions(img_type, dir_from, dir_to):
+def make_predictions(dir_from, dir_to, img_heights):
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model = make_model()
 
-    test_dataset = WheatTestDataset(make_test_df(dir_from), dir_from, img_type, get_test_transform())
+    test_dataset = WheatTestDataset(make_test_df(dir_from), dir_from, get_test_transform())
 
     test_data_loader = DataLoader(
         test_dataset,
@@ -85,17 +84,17 @@ def make_predictions(img_type, dir_from, dir_to):
             boxes = boxes[scores >= detection_threshold].astype(np.int32)
 
             wheat_on_photo = len(boxes)
-            photo_area = calculate_photo_area(int(image_id.split('_')[-1]))
+            photo_area = calculate_photo_area(int(img_heights[image_id]))
             wheat_by_meter = round(wheat_on_photo / photo_area, 5)
             filed_lst.append((image_id, wheat_on_photo, photo_area, wheat_by_meter))
 
-            original_image = cv2.imread(f'{dir_from}/{image_id}.{img_type}')
+            original_image = cv2.imread(f'{dir_from}/{image_id}')
             for box in boxes:
                 cv2.rectangle(original_image,
                               (box[0], box[1]),
                               (box[2], box[3]),
                               (0, 0, 220), 2)
 
-            cv2.imwrite(f'{dir_to}/{image_id}.jpg', original_image)
+            cv2.imwrite(f'{dir_to}/{image_id}', original_image)
 
     return filed_lst

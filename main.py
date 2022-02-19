@@ -20,13 +20,18 @@ def process():
     # Split coordinates
     field_coords = []
     t = []
-    for index, elem in enumerate(request.form['fieldCoords'].split(',')):
+    for index, elem in enumerate(request.form['mapContour'].split(',')):
         t.append(int(elem))
 
         if index % 2 != 0:
             field_coords.append(t)
             t = []
-    print(field_coords)
+    # print(field_coords)
+    
+    img_heights = {}
+    for i in request.form:
+        if i.endswith('.png'):
+            img_heights[i] = int(request.form[i].split(',')[2])
         
 
     # All files are stored in the dict as (PHOTO_NUMBER, FILE)
@@ -35,29 +40,27 @@ def process():
     create_dir_if_necessary('results')
 
     files = request.files
-    for i in range(len(request.files)):
-        needed_file = request.files.get(str(i))
-        needed_file.save('./static/unprocessed_images/' + needed_file.name + '.png')
+    for i in request.files:
+        needed_file = request.files.get(i)
+        needed_file.save('./static/unprocessed_images/' + i)
 
     print('MAKING PREDICTIONS...')
-    filed_lst = make_predictions('png', './static/unprocessed_images/', './static/results/')
+
+    filed_lst = make_predictions('./static/unprocessed_images/', './static/results/', img_heights)
+    print('END PREDICT')
     field_area = calculate_field_area(field_coords)
     total_wheat, density = make_calculations(filed_lst, field_area)
-    # total_wheat = -1
-    # density = -2
-    # total_area = -3
+
     print(total_wheat, density)
-    print('END PREDICT')
 
     return str(field_area) + ';' + str(total_wheat) + ';' + str(density)
 
 
 def create_dir_if_necessary(dir_name):
     if os.path.exists('static/' + dir_name):
-        print('EXISTS')
         return
     os.mkdir('static/' + dir_name)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='localhost', port=5000, debug=True)

@@ -11,20 +11,19 @@ from albumentations.pytorch.transforms import ToTensorV2
 
 class WheatTestDataset(Dataset):
 
-    def __init__(self, dataframe, image_dir, img_format, transforms=None):
+    def __init__(self, dataframe, image_dir, transforms=None):
         super().__init__()
 
         self.image_ids = dataframe['image_id'].unique()
         self.df = dataframe
         self.image_dir = image_dir
         self.transforms = transforms
-        self.img_format = img_format
 
     def __getitem__(self, index: int):
 
         image_id = self.image_ids[index]
 
-        image = cv2.imread(f'{self.image_dir}/{image_id}.{self.img_format}', cv2.IMREAD_COLOR)
+        image = cv2.imread(f'{self.image_dir}/{image_id}', cv2.IMREAD_COLOR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
         image /= 255.0
 

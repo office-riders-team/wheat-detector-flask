@@ -1,18 +1,17 @@
 "use strict"
-const dropZones = $('.drop-zone')
-const imgsDZ = dropZones[0]
-const mapDZ = dropZones[1]
-const fileForms = $('input[type="file"]')
+const dropZone = $('.drop-zone')
+const fileForm = $('input[type="file"]')
 const canvas = $('canvas')[0]
 const ctx = canvas.getContext('2d')
 
-const VERTICAL_ANGLE_OF_VIEW = 70
-const HORIZONTAL_ANGLE_OF_VIEW = 120
+const SERVER_PORT = '5000'
 const POPUP_ANIMATION_DURATION = 0.3
 
 let wereImagesProcessed = false
-let imgCoords = []
+let imgCoords = {}
 let mapContour = []
+
+let imageFiles = {}
 
 // Relatively to canvas!
 let mouseX = 0
@@ -23,123 +22,95 @@ let density
 let totalArea
 
 
-function getTanDeg(deg) {
-  var rad = deg * Math.PI/180;
-  return Math.tan(rad);
-}
+// ------------------------- Drop zones ---------------------
+
+dropZone.on('dragover', (event) => {
+  event.preventDefault()
+  dropZone.addClass('hover')
+})
 
 
-function getNumbersFromText(str) {
-  let nums = []
-  let num = ''
-  for (let i = 0; i < str.length; ++i) {
-    if (!isNaN(str[i])) {
-      num += str[i]
-    } else if ($.trim(num)) {
-      nums.push(parseInt(num))
-      num = ''
+dropZone.on('dragleave', (event) => {
+  event.preventDefault()
+  dropZone.removeClass('hover')
+})
+
+
+dropZone.on('drop', (event) => {
+    event.preventDefault()
+
+    dropZone.removeClass('hover')
+    dropZone.addClass('drop')
+
+    event.originalEvent.dataTransfer.dropEffect = 'move'
+    const files = event.originalEvent.dataTransfer.files
+    fileForm[0].files = files
+})
+
+
+dropZone.on('click', () => {
+  fileForm.trigger('click')
+  fileForm.on('change', () => {
+    dropZone.addClass('drop')
+  })
+})
+
+
+fileForm.on('change', () => {
+  processFiles(fileForm[0].files)
+})
+
+
+function processFiles(files) {
+  imageFiles = {}
+
+  for (let i = 0; i < files.length; ++i) {
+    const file = files[i]
+    if (file.name.endsWith('.png')) {
+      imageFiles[file.name] = file
+    } else if (file.name.endsWith('.json')) {
+      parseJSON(file)
     }
   }
-  return nums
 }
 
 
-// ------------------------- Drop zones ---------------------
-for (let i = 0; i < dropZones.length; ++i) {
-  const dropZone = $(dropZones[i])
+function parseJSON(jsonFile) {
+  let reader = new FileReader()
 
-  if (typeof(window.FileReader) == 'undefined') {
-      dropZone.text('Не поддерживается браузером!');
-      dropZone.addClass('error');
+  reader.onload = () => {
+    const jsonData = JSON.parse(reader.result)
+
+    mapContour = jsonData['mapContour']
+
+    for (const [key, value] of Object.entries(jsonData)) {
+      if (key == 'mapContour') continue
+      imgCoords[key] = value
+    }
   }
 
-
-  dropZone.on('dragover', () => {
-    event.preventDefault()
-    dropZone.addClass('hover')
-  })
-
-  dropZone.on('dragleave', () => {
-    event.preventDefault()
-    dropZone.removeClass('hover')
-  })
-
-  dropZone.on('drop', (event) => {
-      event.preventDefault()
-
-      dropZone.removeClass('hover')
-      dropZone.addClass('drop')
-
-      event.originalEvent.dataTransfer.dropEffect = 'move'
-      const files = event.originalEvent.dataTransfer.files
-      fileForms[i].files = files
-
-      const id = dropZone.attr('id')
-      if (id == 'map-dz') {
-        const file = files[0]
-        let reader = new FileReader()
-
-        reader.onload = (e) => {
-          const file = e.target.result
-          const nums = getNumbersFromText(file)
-          
-          for (let i = 0; i < nums.length; i += 2) {
-            mapContour.push([nums[i], nums[i + 1]])
-          }
-          console.log('Coords:', mapContour)
-        }
-        reader.readAsText(file)
-      } else {
-        imgCoords = new Array(files.length)
-        for (let i = 0; i < files.length; ++i) imgCoords[i] = getNumbersFromText(files[i].name)
-      }
-  })
-
-  dropZone.on('click', (event) => {
-    const el = $(fileForms[i])
-    el.trigger('click')
-    el.on('change', () => {
-      dropZone.addClass('drop')
-      const files = fileForms[i].files
-
-      const id = dropZone.attr('id')
-      if (id == 'map-dz') {
-        const file = files[0]
-        let reader = new FileReader()
-
-        reader.onload = (e) => {
-          const file = e.target.result
-          const nums = getNumbersFromText(file)
-          console.log('Coords:', nums)
-
-          for (let i = 0; i < nums.length; i += 2) {
-            mapContour.push([nums[i], nums[i + 1]])
-          }
-        }
-        reader.readAsText(file)
-      } else {
-        imgCoords = new Array(files.length)
-        for (let i = 0; i < files.length; ++i) imgCoords[i] = getNumbersFromText(files[i].name)
-      }
-    })
-  })
+  reader.readAsText(jsonFile)
 }
+
 
 // Process button
 $('.btn').on('click', (e) => {
   e.preventDefault() // XXX: STOPS FROM DEFAULT BEHAVIOUR
 
+  // Create form data...
   const formData = new FormData()
-  formData.append('fieldCoords', mapContour)
-
-  const imgs = fileForms[0].files
-  for (let i = 0; i < imgs.length; ++i) {
-    formData.append(`${i}`, imgs[i])
+  for (const [key, value] of Object.entries(imageFiles)) {
+    formData.append(key, value)
   }
+  for (const [key, value] of Object.entries(imgCoords)) {
+    formData.append(key, value)
+  }
+  formData.append('mapContour', mapContour)
 
+  // Process the data
   drawTextOnCanvas('PROCESSING...', 80)
 
-  fetch('http://127.0.0.1:5000/process/', {
+  fetch(`http://localhost:${SERVER_PORT}/process/`, {
     method: "POST",
     body: formData
   }).
@@ -150,7 +121,6 @@ $('.btn').on('click', (e) => {
           if (responseText == 'FAIL') {
             console.log('ERROR OCCURED! RESPONSE NOT OK')
             drawTextOnCanvas('NOTHING PROCESSED YET', 80)
-
           } else {
             // Scroll down to the canvas
             $('html,body').animate({scrollTop: $('canvas').offset().top - 40}, 'slow')
@@ -206,35 +176,35 @@ function drawFieldStats() {
 
 
 function displayImageDots() {
-  imgCoords.forEach((numbers, i) => {
-    const xCenter = numbers[2]
-    const yCenter = numbers[3]
-    // const h = numbers[4] / 100
+  for (const [key, value] of Object.entries(imgCoords)) {
+    const xCenter = value[0]
+    const yCenter = value[1]
+
     ctx.fillStyle = 'red'
     ctx.beginPath()
     ctx.arc(xCenter, yCenter, 4, 0, 2 * Math.PI)
     ctx.fill()
-  })
+  }
 }
 
 
 function displayMapContour() {
-  const nums = mapContour
   ctx.strokeStyle = 'black'
+
   ctx.beginPath()
-  ctx.moveTo(nums[0][0], nums[0][1])
-  for (let i = 1; i < nums.length; ++i) {
-    ctx.lineTo(nums[i][0], nums[i][1])
+  ctx.moveTo(mapContour[0][0], mapContour[0][1])
+  for (let i = 1; i < mapContour.length; ++i) {
+    ctx.lineTo(mapContour[i][0], mapContour[i][1])
   }
-  ctx.lineTo(nums[0][0], nums[0][1])
+  ctx.lineTo(mapContour[0][0], mapContour[0][1])
   ctx.stroke()
 }
 
 
-function isMouseHoveredOverPoint(points) {
-  return imgCoords.some((numbers) => {
-    const xCenter = numbers[2]
-    const yCenter = numbers[3]
+function wasMouseHoveredOverPoint() {
+  return Object.values(imgCoords).some((i) => {
+    const xCenter = i[0]
+    const yCenter = i[1]
 
     const radius = 10
 
@@ -262,7 +232,7 @@ $('canvas').on('mousemove', (e) => {
   ctx.fillText(`${mouseX}, ${mouseY}`, mouseX + xOffset + 20, mouseY + yOffest + 14)
 
   // If cursor is hovered over any point we should change the cursor style
-  if (isMouseHoveredOverPoint()) {
+  if (wasMouseHoveredOverPoint()) {
     $('canvas').css('cursor', 'pointer')
   } else {
     $('canvas').css('cursor', 'auto')
@@ -272,11 +242,11 @@ $('canvas').on('mousemove', (e) => {
 
 // If user clicked on a point
 $('canvas').on('click', (e) => {
-  if (!isMouseHoveredOverPoint()) return
+  if (!wasMouseHoveredOverPoint()) return
 
-  imgCoords.forEach((numbers, i) => {
-    const xCenter = numbers[2]
-    const yCenter = numbers[3]
+  for (const [filename, numbers] of Object.entries(imgCoords)) {
+    const xCenter = numbers[0]
+    const yCenter = numbers[1]
 
     const radius = 10
 
@@ -284,16 +254,9 @@ $('canvas').on('click', (e) => {
       $('.popup-background').css('display', 'flex')
       setTimeout(() => $('.popup-background').css('opacity', '1'), POPUP_ANIMATION_DURATION * 1000)
 
-      // const reader = new FileReader()
-      // reader.readAsDataURL(imgs[i])
-
-      // reader.onload = function () {
-        // const base64Image = reader.result
-        // $('.popup-picture').attr('src', base64Image)
-      // }
-      $('.popup-picture').attr('src', `./static/results/${i}.jpg`)
+      $('.popup-picture').attr('src', `./static/results/${filename}`)
     }
-  });
+  }
 })
 
 $('canvas').on('mouseleave', (e) => {
