@@ -45,6 +45,7 @@ dropZone.on('drop', (event) => {
     event.originalEvent.dataTransfer.dropEffect = 'move'
     const files = event.originalEvent.dataTransfer.files
     fileForm[0].files = files
+    processFiles(files)
 })
 
 
@@ -110,7 +111,7 @@ $('.btn').on('click', (e) => {
   // Process the data
   drawTextOnCanvas('PROCESSING...', 80)
 
-  fetch(`http://localhost:${SERVER_PORT}/process/`, {
+  fetch(`process/`, {
     method: "POST",
     body: formData
   }).
