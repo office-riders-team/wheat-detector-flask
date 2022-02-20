@@ -28,13 +28,17 @@
     </section>
     <form enctype="multipart/form-data" method="post" action="">
     <input type="file" class="dndzone-input" multiple>
-    <button class="btn">Process</button>
+    <button class="btn" id="process-btn">Process</button>
     </form>
 
     <h2>The map</h2>
 
     <div id="canvas-div">
       <canvas width="1000px" height="1000px"></canvas>
+      <div class="canvas-buttons">
+        <button class="btn" id="download-map-btn">Download map image</button>
+        <button class="btn" id="download-processed-files-btn">Download processed images as ZIP</button>
+      </div>
     </div>
 
     <div class="popup-background">
@@ -45,5 +49,7 @@
     </div>
   </body>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js" integrity="sha512-xQBQYt9UcgblF6aCMrwU1NkVA7HCXaSN2oq0so80KO+y68M+n64FOcqgav4igHe6D5ObBLIf68DWv+gfBowczg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="{{ url_for('static', filename= './js/main.js') }}"></script>
 </html>

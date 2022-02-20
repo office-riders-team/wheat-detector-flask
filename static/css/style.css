@@ -157,9 +157,7 @@ section {
 canvas {
   border: 1px dashed black;
   margin: 0 auto;
-  margin-bottom: 50px;
   /* width: 80%; */
-  /* height: 1000px; */
   user-select: none;
 
   background: #FEFCE5;
@@ -171,8 +169,15 @@ canvas {
 
 #canvas-div {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   overflow: show;
+  margin-bottom: 0;
+}
+
+.canvas-buttons {
+  margin-top: 0px;
+  display: flex;
+  flex-direction: row;
 }
 
 .popup-background {

@@ -4,7 +4,6 @@ const fileForm = $('input[type="file"]')
 const canvas = $('canvas')[0]
 const ctx = canvas.getContext('2d')
 
-const SERVER_PORT = '5000'
 const POPUP_ANIMATION_DURATION = 0.3
 
 let wereImagesProcessed = false
@@ -95,7 +94,7 @@ function parseJSON(jsonFile) {
 
 
 // Process button
-$('.btn').on('click', (e) => {
+$('#process-btn').on('click', (e) => {
   e.preventDefault() // XXX: STOPS FROM DEFAULT BEHAVIOUR
 
   // Create form data...
@@ -264,6 +263,29 @@ $('canvas').on('mouseleave', (e) => {
   if (wereImagesProcessed) draw()
 })
 
+// ------------------------- Buttons under canvas --------------------
+$('#download-map-btn').on('click', () => {
+  const a = document.createElement('a')
+  a.download = 'map.png'
+  a.href = canvas.toDataURL()
+  a.click()
+})
+
+$('#download-processed-files-btn').on('click', async () => {
+  const zip = new JSZip()
+  const folder = zip.folder('images')
+  
+  for (const [filename, _] of Object.entries(imgCoords)) {
+    const response = await fetch(`./static/results/${filename}`)
+    const rawImage = await response.arrayBuffer()
+    folder.file(filename, rawImage)
+  }
+
+  zip.generateAsync({type:"blob"})
+  .then(function(content) {
+    saveAs(content, "result.zip");
+  })
+})
 
 // ------------------------- POPUP --------------------------
 $('.popup-close-btn').on('click', () => {
